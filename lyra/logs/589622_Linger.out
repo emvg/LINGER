@@ -1,0 +1,85 @@
+[JOB START] Tue Feb 10 02:54:29 PM CET 2026
+Running on: ly-w111
+Job ID: 589622
+Script : code/linger.py
+Conda env : LINGER
+[14:54:35] Reading input multi-omics matrix...
+[14:54:40] Adata loaded: 11909 cells, 144978 features
+[14:54:40] obs sample:
+Empty DataFrame
+Columns: []
+Index: [AAACAGCCAAGGAATC-1, AAACAGCCAATCCCTT-1, AAACAGCCAATGCGCT-1, AAACAGCCACACTAAT-1, AAACAGCCACCAACCG-1]
+[14:54:40] var sample:
+                gene_ids    feature_types  genome
+MIR1302-2HG  MIR1302-2HG  Gene Expression  GRCh38
+FAM138A          FAM138A  Gene Expression  GRCh38
+OR4F5              OR4F5  Gene Expression  GRCh38
+AL627309.1    AL627309.1  Gene Expression  GRCh38
+AL627309.3    AL627309.3  Gene Expression  GRCh38
+[14:54:40] Step completed in 5.7s
+
+[14:54:40] Filtering low-count cells and genes...
+[14:54:49] Filtered RNA: 9543 cells, 25485 genes
+[14:54:49] Filtered ATAC: 9543 cells, 107208 peaks
+[14:54:49] Step completed in 8.4s
+
+[14:54:49] Generating pseudo-bulk / metacells...
+[14:55:22] TG_pseudobulk sample:
+            GCGCCTTGTTGGTTCT-1  ...  CATAATCCAATCGCAC-1
+AL627309.1            0.000000  ...            0.000000
+AL627309.5            0.000000  ...            0.000000
+AL627309.4            0.000000  ...            0.000000
+AL669831.2            0.000000  ...            0.000000
+LINC01409             0.254819  ...            0.212094
+
+[5 rows x 343 columns]
+[14:55:22] RE_pseudobulk sample:
+                    GCGCCTTGTTGGTTCT-1  ...  CATAATCCAATCGCAC-1
+chr1:10109-10357              0.000000  ...                 0.0
+chr1:180730-181630            0.000000  ...                 0.0
+chr1:191491-191736            0.000000  ...                 0.0
+chr1:267816-268196            0.000000  ...                 0.0
+chr1:586028-586373            0.057822  ...                 0.0
+
+[5 rows x 343 columns]
+[14:55:22] Step completed in 33.8s
+
+[14:55:22] Saving pseudobulk data...
+[14:55:38] Step completed in 15.2s
+
+[14:55:38] Preprocessing and training LINGER model...
+Mapping gene expression...
+Generate TF expression...
+Generate RE chromatin accessibility...
+Generate TF binding...
+Generate Index...
+chr1
+chr2
+chr3
+chr4
+chr5
+chr6
+chr7
+chr8
+chr9
+chr10
+chr11
+chr12
+chr13
+chr14
+chr15
+chr16
+chr17
+chr18
+chr19
+chr20
+chr21
+chr22
+chrX
+[18:36:33] Step completed in 13255.3s
+
+[18:36:33] Generating cell population GRNs...
+Generating cellular population TF binding strength ...
+Generating cellular population TF binding strength for chr1
+
+[JOB END] Tue Feb 10 06:36:36 PM CET 2026
