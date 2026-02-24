@@ -43,31 +43,32 @@ From: ubuntu:20.04
     . "/opt/conda/etc/profile.d/conda.sh"
     . "/opt/conda/etc/profile.d/mamba.sh"
 
-    # 3. Create the Environment (The Heavy Lifting)
+    # 3. Create the Environment 
     # We install ALL binary-heavy packages here to prevent pip from building them.
     # Note: We match pybedtools=0.10.0 to exactly what LingerGRN wants.
-mamba create -y -n LINGER -c pytorch -c nvidia -c bioconda -c conda-forge \
-    python=3.10 \
-    pip \
-    setuptools \
-    wheel \
-    cython \
-    numpy \
-    pandas \
-    scipy \
-    pytorch=2.5.1 \
-    torchvision \
-    torchaudio \
-    bedtools \
-    "pybedtools=0.10.0" \
-    rpy2 \
-    "r-base>=4.2" \
-    r-ggplot2 \
-    r-tidyr \
-    r-egg \
-    homer \
-    scanpy \
-    anndata
+    mamba create -y -n LINGER -c pytorch -c nvidia -c bioconda -c conda-forge \
+        python=3.10 \
+        pip \
+        setuptools \
+        wheel \
+        cython \
+        numpy \
+        pandas \
+        scipy \
+        pytorch=2.5.1 \
+        torchvision \
+        torchaudio \
+        bedtools \
+        "pybedtools=0.10.0" \
+        rpy2 \
+        "r-base>=4.2" \
+        r-ggplot2 \
+        r-tidyr \
+        r-egg \
+        homer \
+        scanpy \
+        anndata \
+        mudata
 
 
     # 4. Set Environment Variables for the Build
@@ -76,8 +77,6 @@ mamba create -y -n LINGER -c pytorch -c nvidia -c bioconda -c conda-forge \
     export R_HOME="/opt/conda/envs/LINGER/lib/R"
     
     # 5. Install LingerGRN
-    # We use --no-deps or just let it verify dependencies. 
-    # Since pybedtools and rpy2 are already there, pip will skip them.
     /opt/conda/envs/LINGER/bin/pip install LingerGRN==1.105
 
     # 6. Clean up
@@ -90,5 +89,5 @@ mamba create -y -n LINGER -c pytorch -c nvidia -c bioconda -c conda-forge \
     exec /opt/conda/envs/LINGER/bin/python "$@"
 
 %labels
-    Author YourName
-    Version v1.105_Fixed
+    Version v3
+
