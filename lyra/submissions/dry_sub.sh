@@ -1,14 +1,12 @@
 #!/bin/bash
 # Submission script for Lyra
 
-#SBATCH --job-name=dryRun
-#SBATCH --time=00:01:00
+#SBATCH --job-name=testlinger_baseline
+#SBATCH --time=00:45:00
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
-#SBATCH --partition=batch
-
-#SBATCH --gres="gpu:0"
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
+#SBATCH --partition=batch   
 
 #SBATCH --output=logs/%j_%x.out
 #SBATCH --error=logs/%j_%x.err
@@ -17,10 +15,9 @@
 # Settings
 # -------------------------
 
-CONTAINER="images/linger_v2.sif"
-CONDA_ENV="LINGER"
+CONTAINER="images/linger.sif"
 
-SCRIPT="code/dry_run.py"
+SCRIPT="code/testlinger.py"
 HOST_PATH="/globalsc/ucl/inma/vangysel/Linger"
 CONTAINER_PATH="/project"
 
@@ -40,18 +37,8 @@ echo "Job ID: $SLURM_JOB_ID"
 # -------------------------
 
 srun apptainer exec \
-    --nv \
     --bind $HOST_PATH:$CONTAINER_PATH \
-    "$CONTAINER" bash -c "
-
-    source /opt/conda/etc/profile.d/conda.sh && \
-    conda activate $CONDA_ENV || exit 1
-
-    echo \"Conda env : \$CONDA_DEFAULT_ENV\"
-
-    nvidia-smi >/dev/null 2>&1
-
-    # Run script
+    "$CONTAINER" bash -c " 
     python $SCRIPT
 "
 

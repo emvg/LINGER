@@ -1,14 +1,14 @@
 #!/bin/bash
 # Submission script for Lyra
 
-#SBATCH --job-name=Linger
-#SBATCH --time=06:30:00
+#SBATCH --job-name=lingerv1.106
+#SBATCH --time=9:00:00
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=12
+#SBATCH --cpus-per-task=20
 #SBATCH --mem=128G
 #SBATCH --partition=batch
 
-#SBATCH --gres="gpu:1"
+#SBATCH --exclusive
 
 #SBATCH --output=logs/%j_%x.out
 #SBATCH --error=logs/%j_%x.err
@@ -20,8 +20,7 @@
 # Settings
 # -------------------------
 
-CONTAINER="images/linger_v2.sif"
-CONDA_ENV="LINGER"
+CONTAINER="images/linger.sif"
 
 SCRIPT="code/linger.py"
 HOST_PATH="/globalsc/ucl/inma/vangysel/Linger"
@@ -46,18 +45,8 @@ echo "Script : $SCRIPT"
 
 
 srun apptainer exec \
-    --nv \
     --bind $HOST_PATH:$CONTAINER_PATH \
     "$CONTAINER" bash -c "
-
-    source /opt/conda/etc/profile.d/conda.sh && \
-    conda activate $CONDA_ENV || exit 1
-
-    echo \"Conda env : \$CONDA_DEFAULT_ENV\"
-
-    nvidia-smi >/dev/null 2>&1
-
-    # Run script
     python $SCRIPT
 "
 
