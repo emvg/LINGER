@@ -106,7 +106,8 @@ def load_motifbinding_chr(chrN,GRNdir,motifWeight,outdir):
     motifWeight=motifWeight.loc[Motif_binding_temp1.columns]
     Motif_binding = np.diag(1.0 / (motifWeight.T + 0.1)) * Motif_binding_temp1.values.T
     Motif_binding = np.log1p(Motif_binding)
-    return Motif_binding_temp1
+    return Motif_binding_temp1    
+    #return Motif_binding      # why not ?    
 
 def load_TFbinding(GRNdir,motifWeight,Match2,TFName,Element_name,outdir):
     chrall=['chr'+str(i+1) for i in range(22)]
@@ -229,7 +230,7 @@ def extract_overlap_regions(genome,GRNdir,outdir,method):
 def preprocess(TG_pseudobulk,RE_pseudobulk,GRNdir,genome,method,outdir):
     #package_dir = os.path.dirname(os.path.abspath(__file__))
     if method=='LINGER':
-        print("Overlapping regions")
+        print('Overlapping regions...')
         extract_overlap_regions(genome,GRNdir,outdir,method)
         print('Mapping gene expression...')
         TFName = pd.read_csv(GRNdir+'TFName.txt',header=None)
