@@ -377,14 +377,12 @@ def get_system_resources():
 
     return cpus, ram_gb
 
-def _process_chr(chr, GRNdir, outdir, data_merge, idx, Target, adj_matrix_all, Exp, TF_match, Opn, l1_lambda, fisher_w, activef, n_threads):
+def _process_chr(chr, GRNdir, outdir, data_merge, idx, Target, adj_matrix_all, Exp, TF_match, Opn, l1_lambda, fisher_w, activef):
     import warnings
     import torch
     import pandas as pd
     import numpy as np
     from tqdm import tqdm
-    
-    torch.set_num_threads(n_threads)
 
     netall_s = {}
     shapall_s = {}
@@ -465,10 +463,8 @@ def training(GRNdir,method,outdir,activef,species):
         # per worker RAM (load fisherfisher_{chr}.pt, net_{chr}.pt and create shap_{chr}.pt)
         ram_worker = 5     
 
-        # Divide remaining RAM per worker and leave half of the cpus for threads
-        n_jobs = max(1, min(int(ram_free / ram_worker), n_cpus // 2))
-        n_threads = max(1, n_cpus // n_jobs)
-        print(f"With {n_cpus} CPUs, {ram_av:.2f} GB RAM, start {n_jobs} workers with {n_threads} threads")
+        n_jobs = max(1, min(int(ram_free / ram_worker), n_cpus))
+        print(f"With {n_cpus} CPUs, {ram_av:.2f} GB RAM, start {n_jobs} workers")
 
         Exp,idx,Opn,adj_matrix_all,Target,data_merge,TF_match=load_data(GRNdir,outdir)
         data_merge.to_csv(outdir+'data_merge.txt',sep='\t')
@@ -478,7 +474,7 @@ def training(GRNdir,method,outdir,activef,species):
             delayed(_process_chr)(
                 chr, GRNdir, outdir, data_merge, idx, Target,
                 adj_matrix_all, Exp, TF_match, Opn,
-                l1_lambda, fisher_w, activef, n_threads
+                l1_lambda, fisher_w, activef
             )
             for chr in chrall
         )  
