@@ -6,6 +6,10 @@ import pandas as pd
 import subprocess
 from tqdm import tqdm
 from joblib import Parallel, delayed
+
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="anndata")
+
 def list2mat(df,i_n,j_n,x_n):
     TFs = df[j_n].unique()
     REs = df[i_n].unique()
