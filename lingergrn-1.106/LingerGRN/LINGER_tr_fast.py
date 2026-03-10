@@ -365,8 +365,8 @@ def RE_TG_dis(outdir):
     temp['distance']=np.abs(a_with_b[7]-a_with_b[1])
     temp.to_csv(current_directory+'/data/RE_gene_distance.txt',sep='\t',index=None)
     
+import psutil
 def get_system_resources():
-    import psutil
     cpus = psutil.cpu_count(logical=True)
     ram = psutil.virtual_memory().total
 
@@ -456,17 +456,18 @@ def training(GRNdir,method,outdir,activef,species):
         lambda0 = 0.00 #bulk
         fisher_w=0.1
         
-        # Define parameters for parallelization
         n_cpus, ram_av = get_system_resources()
+        base_ram_gb = psutil.Process(os.getpid()).memory_info().rss / 1e9
+        #print(f"Base ram : {base_ram_gb:.2f}")
 
-        # available RAM (GB) beyond the base RAM usage (30) and safety RAM (10)             
-        ram_free = ram_av - 20 - 10
+        # available RAM (GB) beyond the base RAM usage and safety RAM (10GB)             
+        ram_free = ram_av - base_ram_gb - 10
 
         # per worker RAM (load fisherfisher_{chr}.pt, net_{chr}.pt and create shap_{chr}.pt)
         ram_worker = 5     
 
-        n_jobs = max(1, min(int(ram_free / ram_worker), n_cpus))
-        print(f"With {n_cpus} CPUs, {ram_av:.2f} GB RAM, start {n_jobs} workers")
+        n_jobs = max(1, min(int(ram_free / ram_worker), n_cpus, 23))
+        print(f"With {n_cpus} CPUs, {ram_av:.2f} GB RAM (avail. : {ram_free:.2f} GB), start {n_jobs} workers")
 
         Exp,idx,Opn,adj_matrix_all,Target,data_merge,TF_match=load_data(GRNdir,outdir)
         data_merge.to_csv(outdir+'data_merge.txt',sep='\t')
