@@ -407,9 +407,9 @@ def _process_chr(chr, GRNdir, outdir, data_merge, idx, Target, adj_matrix_all, E
     REindex_bulk      = idxRE_all.values[:, 0]
     TFindex_bulk      = idx_bulk.values[:, 2]
     input_size_all    = idx_bulk.values[:, 3]
-
-    fisherall = torch.load(GRNdir + 'fisher_'     + chr + '.pt')
-    netall    = torch.load(GRNdir + 'all_models_' + chr + '.pt')
+    
+    fisherall = torch.load(GRNdir + 'fisher_'     + chr + '.pt', weights_only=False)
+    netall    = torch.load(GRNdir + 'all_models_' + chr + '.pt', weights_only=False)
 
     for ii in tqdm(range(N), desc=chr):
         warnings.filterwarnings("ignore")
