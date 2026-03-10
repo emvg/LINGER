@@ -242,7 +242,7 @@ def TF_RE_LINGER_chr(chr,outdir):
     mat=pd.DataFrame(mat,index=REs,columns=TFs)
     return mat
 
-def _process_chr_TF_RE(chrN, outdir, TG_index):
+def _process_TF_RE_LINGER_chr(chrN, outdir, TG_index):
     import pandas as pd
     mat = TF_RE_LINGER_chr(chrN, outdir)
     TFoverlap = list(set(mat.columns) & set(TG_index))
@@ -384,7 +384,7 @@ def TF_RE_binding(GRNdir,adata_RNA,adata_ATAC,genome,method,outdir):
         n_cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', os.cpu_count()))
         n_jobs = min(n_cpus, 23)     # assuming n_cpus <= n_gb_ram (1GB/worker)
         results = Parallel(n_jobs=n_jobs, backend='loky', verbose=5)(
-            delayed(_process_chr_TF_RE)(chrN, outdir, TG_index)
+            delayed(_process_TF_RE_LINGER_chr)(chrN, outdir, TG_index)
             for chrN in chrom
         )
         result = pd.concat(results, join='outer', axis=0)
