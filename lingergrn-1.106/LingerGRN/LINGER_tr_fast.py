@@ -447,6 +447,7 @@ import time
 import pandas as pd
 import numpy as np
 def training(GRNdir,method,outdir,activef,species):
+    import psutil
     if method=='LINGER':
         hidden_size  = 64
         hidden_size2 = 16
