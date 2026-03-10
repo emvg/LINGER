@@ -87,7 +87,7 @@ log(f"Step completed in {time.time()-start:.1f}s\n")
 # ---------------------------------------------------------------------------------------------------------------
 # 5) Training the model
 
-from LingerGRN.preprocess import *  
+import preprocess_fast as pre
 
 start = time.time()
 log("Preprocessing ")
@@ -98,24 +98,21 @@ outdir = BASE + "LINGER_output/"
 genome = 'hg38'
 method = 'LINGER'
 
-preprocess(TG_pseudobulk, RE_pseudobulk, GRNdir, genome, method, outdir)
+pre.preprocess(TG_pseudobulk, RE_pseudobulk, GRNdir, genome, method, outdir)
 log(f"Preprocess completed in {time.time() - start:.1f}s")
 
 #########################################################
 
-import LingerGRN.LINGER_tr as LINGER_tr
+import LINGER_tr_fast as LINGER_tr
 
 start = time.time()
 log("Trraining LINGER model...")
 
-activef='ReLU'
-LINGER_tr.training(GRNdir, method, outdir, activef, species='Human')
+LINGER_tr.training(GRNdir, method, outdir, 'ReLU', species='Human')
 log(f"Step completed in {time.time()-start:.1f}s\n")
 
-# ---------------------------------------------------------------------------------------------------------------
-# 6) Generate regulatory networks
 
-import LingerGRN.LL_net as LL_net
+import LL_net_fast as LL_net
 
 start_total = time.time()
 log("Generating cell population GRNs...")
@@ -137,143 +134,3 @@ log(f"trans_reg completed in {time.time() - start:.1f}s")
 
 log("GRNs generation done")
 log(f"Total time: {time.time() - start_total:.1f}s\n")
-
-"""
-
-# ---------------------------------------------------------------------------------------------------------------
-# 7) Cell type specific GRN
-
-start = time.time()
-log("Generating cell type specific GRNs...")
-
-# celltype = 'all'                     # build a GRN for all cell types
-celltype = 'naive CD4 T cells'         # only one cell type
-
-# Check all available cell types
-print(label['label'].value_counts())
-
-import LingerGRN.LL_net as LL_net
-
-
-# TF-RE : TF binding potential
-LL_net.cell_type_specific_TF_RE_binding(
-    GRNdir,
-    adata_RNA,
-    adata_ATAC,
-    genome,
-    celltype,
-    outdir,
-    method       # beware !! 'method' is last arg here
-)
-
-cts_tf_re = pd.read_csv(
-    f"{outdir}/cell_type_specific_TF_RE_binding_{celltype}.txt",
-    sep="\t",
-    index_col=0
-)
-
-log(f"Cell-type TF-RE sample:\n{cts_tf_re.head()}")
-
-# RE-TG : cis-regulatory network
-LL_net.cell_type_specific_cis_reg(
-    GRNdir,
-    adata_RNA,
-    adata_ATAC,
-    genome,
-    celltype,
-    outdir,
-    method
-)
-
-cts_re_tg = pd.read_csv(
-    f"{outdir}/cell_type_specific_cis_regulatory_{celltype}.txt",
-    sep="\t",
-    index_col=0
-)
-
-cts_re_tg.columns = ['TG', 'Score']
-cts_re_tg = cts_re_tg.reset_index()
-cts_re_tg = cts_re_tg.rename(
-    columns={'index': 'RE', cts_re_tg.columns[0]: 'RE'}
-)
-
-log(f"Cell-type RE-TG sample:\n{cts_re_tg.head()}")
-
-# TF-TG : trans-regulatory network
-LL_net.cell_type_specific_trans_reg(
-    GRNdir,
-    adata_RNA,
-    celltype,
-    outdir
-)
-
-cts_tf_tg = pd.read_csv(
-    f"{outdir}/cell_type_specific_trans_regulatory_{celltype}.txt",
-    sep="\t",
-    index_col=0
-)
-
-log(f"Cell-type TF-TG sample:\n{cts_tf_tg.head()}")
-
-log("Cell type specific GRNs generation done")
-log(f"Step completed in {time.time()-start:.1f}s\n")
-
-
-# ---------------------------------------------------------------------------------------------------------------
-# 8) Identify driver regulators by TF activity
-
-start = time.time()
-log("Identifying driver regulators by TF activity...")
-
-# Calculate TF activity
-from LingerGRN.TF_activity import *
-import anndata
-
-
-network = 'naive CD4 T cells'
-
-#adata_RNA = anndata.read_h5ad('data/adata_RNA.h5ad')
-TF_activity = regulon(outdir,adata_RNA,GRNdir,network,genome)
-
-log(f"TF activity:\n{TF_activity.head()}")
-TF_activity.to_csv('data/TF_activity.tsv')
-
-
-
-# Calculate differential TF activity between cell types
-celltype = 'naive CD4 T cells'
-
-t_test_results=master_regulator(TF_activity,adata_RNA,celltype)
-print(t_test_results.head())
-
-
-log(f"Driver regulators:\n{t_test_results.head()}")
-
-
-drivers = t_test_results[(t_test_results['t_stat'] > 0) & (t_test_results['adj_p'] < 0.05)]
-drivers = drivers.sort_values('t_stat', ascending=False)
-
-# Top driver regulators
-log(f"TOP 10 Driver regulators:\n{drivers.head(10)}")
-
-
-
-TFName = drivers.index.tolist()[0]
-datatype = 'activity'
-celltype1 = 'naive CD4 T cells'
-celltype2 = 'Others'
-save = True
-
-# y axis is TF activity score (also called the regulon score).
-
-box_comp(TFName, adata_RNA, celltype1, celltype2, datatype, TF_activity, save, outdir)
-
-
-datatype='expression'
-box_comp(TFName, adata_RNA, celltype1, celltype2, datatype, TF_activity, save, outdir)
-
-
-log("Driver regulator identification done")
-log(f"Step completed in {time.time()-start:.1f}s\n")
-
-"""
