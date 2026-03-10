@@ -657,7 +657,7 @@ def trans_shap(chr,outdir):
     score_1=[]
     data_merge_temp,geneName,REindex,TFindex,shap_all,TFName,REName=load_shap(chr,outdir)
     from tqdm import tqdm
-    for j in tqdm(range(data_merge_temp.shape[0])):
+    for j in tqdm(range(data_merge_temp.shape[0]), desc=chr):
         ii=data_merge_temp.index[j]
         if ii in shap_all.keys():
             AA0=shap_all[ii]
@@ -1103,11 +1103,15 @@ def trans_reg(GRNdir,method,outdir,genome):
     elif method=='LINGER':
         chrom=['chr'+str(i+1) for i in range(22)]
         chrom.append('chrX')
-        S=pd.DataFrame([])
-        for i in tqdm(range(23)):
-            chrN=chrom[i]
-            temp=trans_shap(chrN,outdir)
-            S=pd.concat([S,temp],axis=0,join='outer')
+        import os
+        from joblib import Parallel, delayed
+        n_cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', os.cpu_count()))
+        n_jobs = min(n_cpus, 23)
+        results = Parallel(n_jobs=n_jobs, backend='loky')(
+            delayed(trans_shap)(chrN, outdir)
+            for chrN in chrom
+        )
+        S = pd.concat(results, join='outer', axis=0)
     elif method=='scNN':
         Exp,Opn,Target,RE_TGlink=load_data_scNN(GRNdir,genome)
         RE_TGlink=pd.read_csv(outdir+'RE_TGlink.txt',sep='\t',header=0)
