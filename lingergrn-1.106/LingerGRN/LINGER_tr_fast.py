@@ -365,8 +365,8 @@ def RE_TG_dis(outdir):
     temp['distance']=np.abs(a_with_b[7]-a_with_b[1])
     temp.to_csv(current_directory+'/data/RE_gene_distance.txt',sep='\t',index=None)
     
-import psutil
 def get_system_resources():
+    import psutil
     cpus = psutil.cpu_count(logical=True)
     ram = psutil.virtual_memory().total
 
@@ -383,6 +383,8 @@ def _process_chr(chr, GRNdir, outdir, data_merge, idx, Target, adj_matrix_all, E
     import pandas as pd
     import numpy as np
     from tqdm import tqdm
+
+    torch.set_num_threads(1) 
 
     netall_s = {}
     shapall_s = {}
