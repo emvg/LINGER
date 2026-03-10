@@ -365,8 +365,8 @@ def RE_TG_dis(outdir):
     temp['distance']=np.abs(a_with_b[7]-a_with_b[1])
     temp.to_csv(current_directory+'/data/RE_gene_distance.txt',sep='\t',index=None)
     
-import psutil
 def get_system_resources():
+    import psutil
     cpus = psutil.cpu_count(logical=True)
     ram = psutil.virtual_memory().total
 
@@ -457,11 +457,11 @@ def training(GRNdir,method,outdir,activef,species):
         fisher_w=0.1
         
         n_cpus, ram_av = get_system_resources()
-        base_ram_gb = psutil.Process(os.getpid()).memory_info().rss / 1e9
+        base_ram = psutil.Process(os.getpid()).memory_info().rss / 1e9
         #print(f"Base ram : {base_ram_gb:.2f}")
 
         # available RAM (GB) beyond the base RAM usage and safety RAM (10GB)             
-        ram_free = ram_av - base_ram_gb - 10
+        ram_free = ram_av - base_ram - 10
 
         # per worker RAM (load fisherfisher_{chr}.pt, net_{chr}.pt and create shap_{chr}.pt)
         ram_worker = 5     
