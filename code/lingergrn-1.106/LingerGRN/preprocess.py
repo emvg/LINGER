@@ -109,13 +109,14 @@ def load_motifbinding_chr(chrN,GRNdir,motifWeight,outdir):
     return Motif_binding_temp1
 
 def load_TFbinding(GRNdir,motifWeight,Match2,TFName,Element_name,outdir):
-    from tqdm import tqdm
-    motif_binding=pd.DataFrame()
     chrall=['chr'+str(i+1) for i in range(22)]
     chrall.append('chrX')
-    for chrN in tqdm(chrall):
-        Motif_binding_temp1=load_motifbinding_chr(chrN,GRNdir,motifWeight,outdir)
-        motif_binding=pd.concat([motif_binding,Motif_binding_temp1],join='outer',axis=0)
+    n_jobs = 4
+    results = Parallel(n_jobs=n_jobs, backend='loky', verbose=10)(
+        delayed(load_motifbinding_chr)(chrN, GRNdir, motifWeight, outdir)
+        for chrN in chrall
+    )
+    motif_binding = pd.concat(results, join='outer', axis=0)
     motif_binding=motif_binding.fillna(0)
     motif_binding=motif_binding.groupby(motif_binding.index).max()
     motifoverlap=list(set(motif_binding.columns)&set(motifWeight.index))
