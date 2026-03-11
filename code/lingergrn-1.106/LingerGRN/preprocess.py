@@ -107,6 +107,7 @@ def load_motifbinding_chr(chrN,GRNdir,motifWeight,outdir):
     Motif_binding = np.diag(1.0 / (motifWeight.T + 0.1)) * Motif_binding_temp1.values.T
     Motif_binding = np.log1p(Motif_binding)
     return Motif_binding_temp1
+    # return Motif_binding          # why ?
 
 def load_TFbinding(GRNdir,motifWeight,Match2,TFName,Element_name,outdir):
     chrall=['chr'+str(i+1) for i in range(22)]
