@@ -116,7 +116,7 @@ def load_TFbinding(GRNdir,motifWeight,Match2,TFName,Element_name,outdir):
     motifoverlap=list(set(motif_binding.columns)&set(motifWeight.index))
     Match2=Match2[np.isin(Match2[:, 0],motifoverlap), :]
     TF_binding_temp = np.zeros((len(TFName), len(Element_name)))
-    Motif_binding=np.zeros((motif_binding.shape[1], len(Element_name)))
+    #Motif_binding=np.zeros((motif_binding.shape[1], len(Element_name)))
     Element_name_idx=pd.DataFrame(range(len(Element_name)),index=Element_name)
     idx=Element_name_idx.loc[motif_binding.index][0].values
     Motif_binding=np.zeros((motif_binding.shape[1], len(Element_name)))
