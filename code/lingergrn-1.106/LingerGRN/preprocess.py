@@ -5,6 +5,7 @@ import pandas as pd
 #import LingerGRN.pseudo_bulk as pseudo_bulk
 import subprocess
 from tqdm import tqdm
+from joblib import Parallel, delayed
 
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning, module="anndata")
@@ -140,6 +141,25 @@ def load_TFbinding(GRNdir,motifWeight,Match2,TFName,Element_name,outdir):
     TF_binding=pd.DataFrame(TF_binding,index=Element_name,columns=TFName)
     TF_binding.to_csv(outdir+'TF_binding.txt',sep='\t',index=None,header=None)
 
+def _process_chr_overlap(chrtemp, GRNdir, genome, outdir):
+    import pybedtools, os
+    a = pybedtools.example_bedtool(outdir+'match_hg19_peak.bed')
+    b = pybedtools.example_bedtool(GRNdir+'MotifTarget_matrix_'+chrtemp+'.bed')
+    a_with_b = a.intersect(b, wa=True,wb=True)
+    a_with_b.saveas(outdir+'temp_'+chrtemp+'.bed')
+    a_with_b = pd.read_csv(outdir+'temp_'+chrtemp+'.bed', sep='\t', header=None)
+    a_with_b=a_with_b[(a_with_b[1].values==a_with_b[7].values)&(a_with_b[2].values==a_with_b[8].values)]
+    a_with_b_n = pd.DataFrame({
+    'column1': a_with_b[3] + ':' + a_with_b[4].astype(str) + '-' + a_with_b[5].astype(str),
+    'column2': a_with_b[6] + ':' + a_with_b[7].astype(str) + '-' + a_with_b[8].astype(str)})
+    a_with_b_n=a_with_b_n.drop_duplicates()
+    a_with_b_n.to_csv(outdir+'MotifTarget_hg19_hg38_'+chrtemp+'.txt',sep='\t',header=None,index=None)
+    a = pybedtools.example_bedtool(GRNdir+genome+'_Peaks_'+chrtemp+'.bed')
+    b = pybedtools.example_bedtool(outdir+'Region.bed')
+    a_with_b = a.intersect(b, wa=True,wb=True)
+    a_with_b.saveas(outdir+'Region_overlap_'+chrtemp+'.bed')
+    os.remove(outdir+'temp_'+chrtemp+'.bed')
+
 def extract_overlap_regions(genome,GRNdir,outdir,method):
     import pybedtools
     import pandas as pd
@@ -185,22 +205,16 @@ def extract_overlap_regions(genome,GRNdir,outdir,method):
         a_with_b_n.to_csv(outdir+'hg19_Peak_hg19_gene_u.txt',sep='\t',header=None,index=None)
         chr_all=['chr'+str(i+1) for i in range(22)]
         chr_all.append('chrX')
-        for chrtemp in chr_all:
-            a = pybedtools.example_bedtool(outdir+'match_hg19_peak.bed')
-            b = pybedtools.example_bedtool(GRNdir+'MotifTarget_matrix_'+chrtemp+'.bed')
-            a_with_b = a.intersect(b, wa=True,wb=True)
-            a_with_b.saveas(outdir+'temp.bed')
-            a_with_b=pd.read_csv(outdir+'temp.bed',sep='\t',header=None)
-            a_with_b=a_with_b[(a_with_b[1].values==a_with_b[7].values)&(a_with_b[2].values==a_with_b[8].values)]
-            a_with_b_n = pd.DataFrame({
-            'column1': a_with_b[3] + ':' + a_with_b[4].astype(str) + '-' + a_with_b[5].astype(str),
-            'column2': a_with_b[6] + ':' + a_with_b[7].astype(str) + '-' + a_with_b[8].astype(str)})
-            a_with_b_n=a_with_b_n.drop_duplicates()
-            a_with_b_n.to_csv(outdir+'MotifTarget_hg19_hg38_'+chrtemp+'.txt',sep='\t',header=None,index=None)
-            a = pybedtools.example_bedtool(GRNdir+genome+'_Peaks_'+chrtemp+'.bed')
-            b = pybedtools.example_bedtool(outdir+'Region.bed')
-            a_with_b = a.intersect(b, wa=True,wb=True)
-            a_with_b.saveas(outdir+'Region_overlap_'+chrtemp+'.bed')
+        
+        n_jobs = 8
+        Parallel(n_jobs=n_jobs, backend='loky', verbose=10)(
+            delayed(_process_chr_overlap)(chrtemp, GRNdir, genome, outdir)
+            for chrtemp in chr_all
+        )
+
+        # cleanup files in /tmp
+        pybedtools.cleanup(remove_all=True)
+
     if method=='baseline': 
         chr_all=['chr'+str(i+1) for i in range(22)]
         chr_all.append('chrX')
@@ -214,6 +228,7 @@ def extract_overlap_regions(genome,GRNdir,outdir,method):
 def preprocess(TG_pseudobulk,RE_pseudobulk,GRNdir,genome,method,outdir):
     #package_dir = os.path.dirname(os.path.abspath(__file__))
     if method=='LINGER':
+        print("Overlapping regions...")
         extract_overlap_regions(genome,GRNdir,outdir,method)
         print('Mapping gene expression...')
         TFName = pd.read_csv(GRNdir+'TFName.txt',header=None)
